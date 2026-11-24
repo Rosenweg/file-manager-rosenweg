@@ -24,4 +24,7 @@
     <string name="nc_rueck_gerettet">Keine Schreibrechte am Ort der Datei. Deine Fassung liegt in der Nextcloud unter %s.</string>
     <string name="nc_rueck_fehler">%1$s konnte nicht in die Nextcloud geschrieben werden: %2$s</string>
     <string name="nc_rueck_offen">Noch %d Änderung(en) werden in die Nextcloud geschrieben. Bitte kurz warten und dann abmelden.</string>
+    <string name="nc_in_euro_office">In Euro-Office bearbeiten (Browser)</string>
+    <string name="nc_mit_app">Mit App auf dem Telefon ansehen</string>
+    <string name="nc_im_browser">In der Nextcloud im Browser öffnen</string>
 </resources>

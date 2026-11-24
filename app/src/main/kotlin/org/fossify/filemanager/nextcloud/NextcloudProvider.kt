@@ -11,6 +11,7 @@ import android.provider.DocumentsContract
 import android.provider.DocumentsContract.Document
 import android.provider.DocumentsContract.Root
 import android.provider.DocumentsProvider
+import android.util.Log
 import android.webkit.MimeTypeMap
 import ch.rosenweg4303.cloud.Eintrag
 import ch.rosenweg4303.cloud.KontoSpeicher
@@ -21,6 +22,11 @@ import java.io.ByteArrayInputStream
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.util.Locale
+import java.util.concurrent.Callable
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 
 /**
  * Die Rosenweg-Nextcloud in der Dateiauswahl des Systems ("Rosenweg Nextcloud"):
@@ -69,7 +75,16 @@ class NextcloudProvider : DocumentsProvider() {
             }
             return c
         }
-        val e = Listen.eintrag(pfad) ?: netz { dav().eigenschaften(pfad) } ?: throw FileNotFoundException(pfad)
+        val e = Listen.eintrag(pfad) ?: try {
+            netz { dav().eigenschaften(pfad) } ?: throw FileNotFoundException(pfad)
+        } catch (ex: FileNotFoundException) {
+            if (ex.message == pfad) throw ex // gibt es wirklich nicht
+            // Nextcloud gerade nicht erreichbar: Name und Typ kennen wir aus dem Pfad,
+            // damit die App wenigstens den richtigen Titel zeigt
+            Log.w(TAG, "queryDocument $pfad: ${ex.message}")
+            val name = pfad.substringAfterLast('/')
+            Eintrag(name, pfad, false, 0, 0, "", "")
+        }
         zeile(c, e)
         return c
     }
@@ -79,7 +94,8 @@ class NextcloudProvider : DocumentsProvider() {
         val pfad = pfad(parentDocumentId)
         c.setNotificationUri(ctx.contentResolver, DocumentsContract.buildChildDocumentsUri(Nextcloud.authority(ctx), parentDocumentId))
         try {
-            val liste = dav().liste(pfad)
+            val dav = dav()
+            val liste = netz { dav.liste(pfad) }
             Listen.merken(pfad, liste)
             liste.forEach { zeile(c, it) }
         } catch (e: IOException) {
@@ -108,7 +124,7 @@ class NextcloudProvider : DocumentsProvider() {
 
         // Noch nicht hochgeladene eigene Aenderung hat Vorrang vor dem Server
         val quelle = Rueckschreiben.ausstehend(ctx, pfad) ?: if (nurLesen || !abschneiden) {
-            Nextcloud.cacheDatei(ctx, e).also { if (!it.exists()) netz { dav.herunterladen(pfad, it) } }
+            Nextcloud.cacheDatei(ctx, e).also { if (!it.exists()) netz(LADEN_S) { dav.herunterladen(pfad, it) } }
         } else {
             null
         }
@@ -209,18 +225,35 @@ class NextcloudProvider : DocumentsProvider() {
         Nextcloud.geaendert(ctx, ordner)
     }
 
-    /** Netzfehler als FileNotFoundException — so erwartet es die Dateiauswahl. */
-    private fun <T> netz(block: () -> T): T = try {
-        block()
+    /**
+     * Jeder Netzzugriff laeuft auf einem eigenen Thread: Ruft eine App den
+     * Provider von ihrem Haupt-Thread auf, uebertraegt Android deren StrictMode
+     * auf unseren Binder-Thread (NetworkOnMainThreadException). Fehler kommen
+     * als FileNotFoundException — so erwartet es die Dateiauswahl.
+     */
+    private fun <T> netz(maxSekunden: Long = ABFRAGE_S, block: () -> T): T = try {
+        try {
+            NETZ.submit(Callable { block() }).get(maxSekunden, TimeUnit.SECONDS)
+        } catch (e: ExecutionException) {
+            throw e.cause ?: e
+        } catch (e: TimeoutException) {
+            throw IOException("Zeitüberschreitung")
+        }
     } catch (e: NextcloudFehler) {
+        Log.w(TAG, "Nextcloud ${e.code}: ${e.message}")
         if (e.code == 404) throw FileNotFoundException(e.message)
         throw FileNotFoundException("Nextcloud: ${e.message}")
     } catch (e: IOException) {
         if (e is FileNotFoundException) throw e
+        Log.w(TAG, "Netz: $e")
         throw FileNotFoundException("Nextcloud nicht erreichbar: ${e.message}")
     }
 
     private companion object {
+        const val TAG = "RosenwegNextcloud"
+        const val ABFRAGE_S = 60L
+        const val LADEN_S = 15 * 60L
+        val NETZ = Executors.newCachedThreadPool { Thread(it, "rosenweg-nextcloud-netz") }
         val ROOT_SPALTEN = arrayOf(
             Root.COLUMN_ROOT_ID, Root.COLUMN_DOCUMENT_ID, Root.COLUMN_TITLE,
             Root.COLUMN_SUMMARY, Root.COLUMN_FLAGS, Root.COLUMN_ICON,

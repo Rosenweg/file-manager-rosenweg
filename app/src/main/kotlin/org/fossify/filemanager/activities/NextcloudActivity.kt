@@ -303,6 +303,34 @@ class NextcloudActivity : SimpleActivity() {
             return
         }
         val d = dav ?: return
+        if (istOffice(e) && e.fileId > 0) {
+            officeOeffnen(e, d)
+            return
+        }
+        laden(e, d)
+    }
+
+    /**
+     * Office-Dateien: bearbeitet wird in Euro-Office (Browser, Nextcloud). Eine
+     * App auf dem Telefon kann sie hoechstens anzeigen — gibt es keine, gleich
+     * in den Browser.
+     */
+    private fun officeOeffnen(e: Eintrag, d: WebDav) {
+        val app = Intent(Intent.ACTION_VIEW).setDataAndType(Nextcloud.dokumentUri(this, e.pfad), e.mime)
+        if (packageManager.queryIntentActivities(app, 0).none { it.activityInfo.packageName != packageName }) {
+            browserOeffnen(d.officeAdresse(e))
+            return
+        }
+        val punkte = arrayOf(getString(R.string.nc_in_euro_office), getString(R.string.nc_mit_app))
+        getAlertDialogBuilder().setItems(punkte) { _, i ->
+            if (i == 0) browserOeffnen(d.officeAdresse(e)) else laden(e, d)
+        }.setTitle(e.name).show()
+    }
+
+    private fun istOffice(e: Eintrag) =
+        e.name.substringAfterLast('.', "").lowercase() in OFFICE_ENDUNGEN
+
+    private fun laden(e: Eintrag, d: WebDav) {
         // vorab in den Cache laden, damit die andere App nicht auf das Netz wartet
         val ziel = Nextcloud.cacheDatei(this, e)
         if (ziel.exists()) {
@@ -370,13 +398,14 @@ class NextcloudActivity : SimpleActivity() {
     }
 
     private fun aktionen(e: Eintrag) {
-        val punkte = arrayOf(getString(R.string.nc_umbenennen), getString(R.string.nc_loeschen))
-        getAlertDialogBuilder().setItems(punkte) { _, i ->
-            when (i) {
-                0 -> nameAbfragen(R.string.nc_umbenennen, e.name) { umbenennen(e, it) }
-                1 -> loeschen(e)
-            }
-        }.setTitle(e.name).show()
+        val punkte = mutableListOf<Pair<String, () -> Unit>>()
+        if (e.darfUmbenennen) punkte += getString(R.string.nc_umbenennen) to { nameAbfragen(R.string.nc_umbenennen, e.name) { umbenennen(e, it) } }
+        if (e.darfLoeschen) punkte += getString(R.string.nc_loeschen) to { loeschen(e) }
+        val d = dav
+        if (!e.istOrdner && e.fileId > 0 && d != null) punkte += getString(R.string.nc_im_browser) to { browserOeffnen(d.webAdresse(e)) }
+        if (punkte.isEmpty()) return
+        getAlertDialogBuilder().setItems(punkte.map { it.first }.toTypedArray()) { _, i -> punkte[i].second() }
+            .setTitle(e.name).show()
     }
 
     private inner class Liste : RecyclerView.Adapter<Liste.Zeile>() {
@@ -407,5 +436,6 @@ class NextcloudActivity : SimpleActivity() {
 
     private companion object {
         const val PFAD = "pfad"
+        val OFFICE_ENDUNGEN = setOf("doc", "docx", "odt", "rtf", "xls", "xlsx", "ods", "ppt", "pptx", "odp")
     }
 }

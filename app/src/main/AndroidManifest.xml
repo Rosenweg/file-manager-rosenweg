@@ -14,6 +14,11 @@
     <queries>
         <package android:name="org.fossify.filemanager.debug" />
         <package android:name="org.fossify.filemanager" />
+        <!-- Rosenweg: pruefen, ob es fuer eine Nextcloud-Datei eine App gibt (sonst Euro-Office) -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:mimeType="*/*" />
+        </intent>
     </queries>
 
     <application
