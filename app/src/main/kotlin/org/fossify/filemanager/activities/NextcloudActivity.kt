@@ -1,0 +1,395 @@
+package org.fossify.filemanager.activities
+
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.graphics.Paint
+import android.net.Uri
+import android.os.Bundle
+import android.provider.OpenableColumns
+import android.view.LayoutInflater
+import android.view.ViewGroup
+import android.widget.EditText
+import android.widget.FrameLayout
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.FileProvider
+import androidx.recyclerview.widget.RecyclerView
+import ch.rosenweg4303.cloud.Eintrag
+import ch.rosenweg4303.cloud.Konto
+import ch.rosenweg4303.cloud.KontoSpeicher
+import ch.rosenweg4303.cloud.LoginFlow
+import ch.rosenweg4303.cloud.NextcloudFehler
+import ch.rosenweg4303.cloud.WebDav
+import org.fossify.commons.dialogs.ConfirmationDialog
+import org.fossify.commons.extensions.applyColorFilter
+import org.fossify.commons.extensions.beVisibleIf
+import org.fossify.commons.extensions.formatDate
+import org.fossify.commons.extensions.formatSize
+import org.fossify.commons.extensions.getAlertDialogBuilder
+import org.fossify.commons.extensions.getProperPrimaryColor
+import org.fossify.commons.extensions.getProperTextColor
+import org.fossify.commons.extensions.setupDialogStuff
+import org.fossify.commons.extensions.showKeyboard
+import org.fossify.commons.extensions.toast
+import org.fossify.commons.extensions.viewBinding
+import org.fossify.commons.helpers.NavigationIcon
+import org.fossify.commons.helpers.ensureBackgroundThread
+import org.fossify.filemanager.R
+import org.fossify.filemanager.databinding.ActivityNextcloudBinding
+import org.fossify.filemanager.databinding.ItemFileDirListBinding
+import java.io.File
+
+/**
+ * Rosenweg Files: die Dateien der Person in der Rosenweg-Nextcloud.
+ *
+ * Grundregel: Die Dateien bleiben in der Nextcloud. Zum Oeffnen wird nur in den
+ * Cache geladen; der Cache wird beim Abmelden geleert und alte Kopien beim
+ * naechsten Start entfernt. Braucht keine andere Rosenweg-App.
+ */
+class NextcloudActivity : SimpleActivity() {
+    private val binding by viewBinding(ActivityNextcloudBinding::inflate)
+    private val speicher by lazy { KontoSpeicher(this) }
+    private var dav: WebDav? = null
+    private var pfad = ""
+    private var eintraege = listOf<Eintrag>()
+    private var login: LoginFlow? = null
+
+    private val dateienWaehlen = registerForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
+        if (uris.isNotEmpty()) hochladen(uris)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(binding.root)
+        pfad = savedInstanceState?.getString(PFAD) ?: ""
+        binding.apply {
+            setupEdgeToEdge(padBottomSystem = listOf(ncList))
+            setupMaterialScrollListener(ncList, ncAppbar)
+            ncList.adapter = Liste()
+            ncRefresh.setOnRefreshListener { laden() }
+            ncLogin.paintFlags = ncLogin.paintFlags or Paint.UNDERLINE_TEXT_FLAG
+            ncLogin.setOnClickListener { anmelden() }
+            ncToolbar.setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    R.id.nc_hochladen -> dateienWaehlen.launch(arrayOf("*/*"))
+                    R.id.nc_neuer_ordner -> nameAbfragen(R.string.nc_neuer_ordner, "") { neuerOrdner(it) }
+                    R.id.nc_aktualisieren -> laden()
+                    R.id.nc_abmelden -> abmeldenFragen()
+                    else -> return@setOnMenuItemClickListener false
+                }
+                true
+            }
+        }
+        ensureBackgroundThread { cacheAufraeumen(maxAlterMs = 60 * 60 * 1000L) }
+        dav = speicher.laden()?.let { WebDav(it, APP_NAME) }
+        anzeigen()
+        if (dav != null) laden()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        setupTopAppBar(binding.ncAppbar, NavigationIcon.Arrow)
+        binding.ncToolbar.setNavigationOnClickListener { if (!hoch()) finish() }
+        binding.ncPlaceholder.setTextColor(getProperTextColor())
+        binding.ncLogin.setTextColor(getProperPrimaryColor())
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString(PFAD, pfad)
+    }
+
+    override fun onDestroy() {
+        login?.abgebrochen = true
+        super.onDestroy()
+    }
+
+    override fun onBackPressedCompat() = hoch()
+
+    private fun hoch(): Boolean {
+        if (dav == null || pfad.isEmpty()) return false
+        pfad = pfad.substringBeforeLast('/', "")
+        laden()
+        return true
+    }
+
+    private fun anzeigen() {
+        val angemeldet = dav != null
+        binding.apply {
+            ncToolbar.menu.findItem(R.id.nc_hochladen)?.isVisible = angemeldet
+            ncToolbar.menu.findItem(R.id.nc_neuer_ordner)?.isVisible = angemeldet
+            ncToolbar.menu.findItem(R.id.nc_aktualisieren)?.isVisible = angemeldet
+            ncToolbar.menu.findItem(R.id.nc_abmelden)?.isVisible = angemeldet
+            ncToolbar.title = if (pfad.isEmpty()) getString(R.string.nc_titel) else pfad.substringAfterLast('/')
+            ncRefresh.isEnabled = angemeldet
+            ncLogin.beVisibleIf(!angemeldet && login == null)
+            ncPlaceholder.beVisibleIf(!angemeldet || eintraege.isEmpty())
+            ncPlaceholder.text = when {
+                login != null -> getString(R.string.nc_warte_auf_anmeldung)
+                !angemeldet -> getString(R.string.nc_nicht_angemeldet)
+                else -> getString(R.string.nc_leer)
+            }
+            ncList.adapter?.notifyDataSetChanged()
+        }
+    }
+
+    // ---- Anmelden / Abmelden ----
+
+    private fun anmelden() {
+        val flow = LoginFlow(APP_NAME)
+        login = flow
+        anzeigen()
+        ensureBackgroundThread {
+            try {
+                flow.starten()
+                runOnUiThread { browserOeffnen(flow.anmeldeAdresse) }
+                val konto = flow.warten()
+                speicher.speichern(konto)
+                runOnUiThread {
+                    login = null
+                    dav = WebDav(konto, APP_NAME)
+                    pfad = ""
+                    // zurueck in die App holen, falls der Browser noch vorne ist
+                    startActivity(Intent(this, NextcloudActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT))
+                    laden()
+                }
+            } catch (e: Exception) {
+                runOnUiThread {
+                    login = null
+                    anzeigen()
+                    if (!flow.abgebrochen) fehler(e)
+                }
+            }
+        }
+    }
+
+    private fun browserOeffnen(adresse: String) {
+        try {
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(adresse)).addCategory(Intent.CATEGORY_BROWSABLE))
+        } catch (e: ActivityNotFoundException) {
+            toast(R.string.nc_keine_app)
+        }
+    }
+
+    private fun abmeldenFragen() {
+        ConfirmationDialog(this, getString(R.string.nc_abmelden_frage), positive = R.string.yes, negative = R.string.no) {
+            val alt = dav
+            dav = null
+            eintraege = emptyList()
+            pfad = ""
+            speicher.loeschen()
+            anzeigen()
+            ensureBackgroundThread {
+                alt?.appPasswortWiderrufen()
+                cacheAufraeumen(maxAlterMs = 0)
+            }
+        }
+    }
+
+    private fun anmeldungVerloren() {
+        dav = null
+        eintraege = emptyList()
+        speicher.loeschen()
+        anzeigen()
+    }
+
+    // ---- Ordner ----
+
+    private fun laden() {
+        val d = dav ?: return
+        val ziel = pfad
+        binding.ncRefresh.isRefreshing = true
+        ensureBackgroundThread {
+            try {
+                val liste = d.liste(ziel)
+                runOnUiThread {
+                    if (ziel == pfad) eintraege = liste
+                    binding.ncRefresh.isRefreshing = false
+                    anzeigen()
+                }
+            } catch (e: Exception) {
+                runOnUiThread {
+                    binding.ncRefresh.isRefreshing = false
+                    fehler(e)
+                    anzeigen()
+                }
+            }
+        }
+    }
+
+    private fun arbeit(meldung: String? = null, aufgabe: (WebDav) -> Unit) {
+        val d = dav ?: return
+        binding.ncRefresh.isRefreshing = true
+        ensureBackgroundThread {
+            try {
+                aufgabe(d)
+                runOnUiThread {
+                    meldung?.let { toast(it) }
+                    laden()
+                }
+            } catch (e: Exception) {
+                runOnUiThread {
+                    binding.ncRefresh.isRefreshing = false
+                    fehler(e)
+                }
+            }
+        }
+    }
+
+    private fun kind(name: String) = if (pfad.isEmpty()) name else "$pfad/$name"
+
+    private fun neuerOrdner(name: String) = arbeit { it.ordnerAnlegen(kind(name)) }
+
+    private fun umbenennen(e: Eintrag, neu: String) {
+        if (neu == e.name) return
+        val ziel = e.pfad.substringBeforeLast('/', "").let { if (it.isEmpty()) neu else "$it/$neu" }
+        arbeit { it.verschieben(e.pfad, ziel) }
+    }
+
+    private fun loeschen(e: Eintrag) {
+        ConfirmationDialog(this, getString(R.string.nc_loeschen_frage, e.name), positive = R.string.yes, negative = R.string.no) {
+            arbeit { it.loeschen(e.pfad) }
+        }
+    }
+
+    private fun hochladen(uris: List<Uri>) {
+        arbeit(getString(R.string.nc_hochgeladen, uris.size)) { d ->
+            for (uri in uris) {
+                var name = uri.lastPathSegment?.substringAfterLast('/') ?: "Datei"
+                var laenge = -1L
+                contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE), null, null, null)?.use { c ->
+                    if (c.moveToFirst()) {
+                        c.getString(0)?.let { name = it }
+                        if (!c.isNull(1)) laenge = c.getLong(1)
+                    }
+                }
+                d.hochladen(kind(name), { contentResolver.openInputStream(uri)!! }, laenge, contentResolver.getType(uri))
+            }
+        }
+    }
+
+    // ---- Dateien oeffnen ----
+
+    private fun oeffnen(e: Eintrag) {
+        if (e.istOrdner) {
+            pfad = e.pfad
+            eintraege = emptyList()
+            anzeigen()
+            laden()
+            return
+        }
+        val d = dav ?: return
+        // je Version eigener Ordner: eine geaenderte Datei wird neu geladen
+        val ziel = File(File(cacheOrdner(), e.etag.ifEmpty { "x" }.replace(Regex("[^A-Za-z0-9]"), "")), e.name)
+        if (ziel.exists()) {
+            zeigen(ziel, e.mime)
+            return
+        }
+        toast(getString(R.string.nc_wird_geladen, e.name))
+        ensureBackgroundThread {
+            try {
+                d.herunterladen(e.pfad, ziel)
+                runOnUiThread { zeigen(ziel, e.mime) }
+            } catch (ex: Exception) {
+                runOnUiThread { fehler(ex) }
+            }
+        }
+    }
+
+    private fun zeigen(datei: File, mime: String) {
+        val uri = FileProvider.getUriForFile(this, "$packageName.provider", datei)
+        val intent = Intent(Intent.ACTION_VIEW).setDataAndType(uri, mime).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        try {
+            startActivity(intent)
+        } catch (e: ActivityNotFoundException) {
+            toast(R.string.nc_keine_app)
+        }
+    }
+
+    private fun cacheOrdner() = File(cacheDir, "nextcloud")
+
+    /** Grundregel: auf dem Telefon nur Zwischenspeicher. */
+    private fun cacheAufraeumen(maxAlterMs: Long) {
+        val grenze = System.currentTimeMillis() - maxAlterMs
+        cacheOrdner().listFiles()?.forEach { d ->
+            if (maxAlterMs == 0L || d.lastModified() < grenze) d.deleteRecursively()
+        }
+    }
+
+    // ---- Hilfen ----
+
+    private fun fehler(e: Exception) {
+        if (e is NextcloudFehler && e.anmeldungNoetig) {
+            anmeldungVerloren()
+        }
+        toast(getString(R.string.nc_fehler, e.message ?: e.javaClass.simpleName))
+    }
+
+    private fun nameAbfragen(titel: Int, vorgabe: String, fertig: (String) -> Unit) {
+        val feld = EditText(this).apply {
+            setText(vorgabe)
+            setSingleLine()
+            hint = getString(R.string.nc_name)
+            setSelection(vorgabe.substringBeforeLast('.', vorgabe).length)
+        }
+        val rahmen = FrameLayout(this).apply {
+            val p = resources.getDimensionPixelSize(org.fossify.commons.R.dimen.activity_margin)
+            setPadding(p, p, p, 0)
+            addView(feld)
+        }
+        getAlertDialogBuilder()
+            .setPositiveButton(org.fossify.commons.R.string.ok, null)
+            .setNegativeButton(org.fossify.commons.R.string.cancel, null)
+            .apply {
+                setupDialogStuff(rahmen, this, titel) { dialog ->
+                    showKeyboard(feld)
+                    dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE)?.setOnClickListener {
+                        val name = feld.text.toString().trim()
+                        if (name.isEmpty() || name.contains('/') || name == "." || name == "..") return@setOnClickListener
+                        dialog.dismiss()
+                        fertig(name)
+                    }
+                }
+            }
+    }
+
+    private fun aktionen(e: Eintrag) {
+        val punkte = arrayOf(getString(R.string.nc_umbenennen), getString(R.string.nc_loeschen))
+        getAlertDialogBuilder().setItems(punkte) { _, i ->
+            when (i) {
+                0 -> nameAbfragen(R.string.nc_umbenennen, e.name) { umbenennen(e, it) }
+                1 -> loeschen(e)
+            }
+        }.setTitle(e.name).show()
+    }
+
+    private inner class Liste : RecyclerView.Adapter<Liste.Zeile>() {
+        inner class Zeile(val b: ItemFileDirListBinding) : RecyclerView.ViewHolder(b.root)
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
+            Zeile(ItemFileDirListBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+
+        override fun getItemCount() = if (dav == null) 0 else eintraege.size
+
+        override fun onBindViewHolder(h: Zeile, position: Int) {
+            val e = eintraege[position]
+            val farbe = getProperTextColor()
+            h.b.apply {
+                itemName.text = e.name
+                itemName.setTextColor(farbe)
+                itemDetails.text = e.groesse.formatSize()
+                itemDetails.setTextColor(farbe)
+                itemDate.text = if (e.geaendert > 0) e.geaendert.formatDate(this@NextcloudActivity) else ""
+                itemDate.setTextColor(farbe)
+                itemIcon.setImageResource(if (e.istOrdner) org.fossify.commons.R.drawable.ic_folder_vector else org.fossify.commons.R.drawable.ic_file_generic)
+                if (e.istOrdner) itemIcon.applyColorFilter(getProperPrimaryColor()) else itemIcon.clearColorFilter()
+                root.setOnClickListener { oeffnen(e) }
+                root.setOnLongClickListener { aktionen(e); true }
+            }
+        }
+    }
+
+    private companion object {
+        const val PFAD = "pfad"
+        const val APP_NAME = "Rosenweg Files (Android)"
+    }
+}

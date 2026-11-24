@@ -1,4 +1,5 @@
 [versions]
+rosenwegCloud = "0.1.0"
 #jetbrains
 kotlin = "2.3.10"
 #Detekt
@@ -24,6 +25,7 @@ app-build-minimumSDK = "26"
 app-build-javaVersion = "VERSION_17"
 app-build-kotlinJVMTarget = "17"
 [libraries]
+rosenweg-cloud = { module = "ch.rosenweg4303:cloud", version.ref = "rosenwegCloud" }
 #AndroidX
 androidx-swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref = "androidx-swiperefreshlayout" }
 androidx-documentfile = { module = "androidx.documentfile:documentfile", version.ref = "androidx-documentfile" }

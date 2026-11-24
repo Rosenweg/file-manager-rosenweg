@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:id="@+id/nc_hochladen" android:icon="@drawable/ic_upload_vector"
+        android:title="@string/nc_hochladen" app:showAsAction="always" />
+    <item android:id="@+id/nc_neuer_ordner" android:icon="@drawable/ic_create_folder_vector"
+        android:title="@string/nc_neuer_ordner" app:showAsAction="always" />
+    <item android:id="@+id/nc_aktualisieren" android:title="@string/nc_aktualisieren" app:showAsAction="never" />
+    <item android:id="@+id/nc_abmelden" android:title="@string/nc_abmelden" app:showAsAction="never" />
+</menu>
