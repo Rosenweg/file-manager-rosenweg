@@ -19,4 +19,9 @@
     <string name="nc_hochgeladen">%d hochgeladen</string>
     <string name="nc_fehler">Nextcloud: %s</string>
     <string name="nc_keine_app">Keine App zum Öffnen gefunden</string>
+    <string name="nc_wurzel">Rosenweg Nextcloud</string>
+    <string name="nc_rueck_konflikt">%s: Die Datei wurde inzwischen in der Nextcloud geändert. Deine Fassung liegt daneben als Konfliktkopie.</string>
+    <string name="nc_rueck_gerettet">Keine Schreibrechte am Ort der Datei. Deine Fassung liegt in der Nextcloud unter %s.</string>
+    <string name="nc_rueck_fehler">%1$s konnte nicht in die Nextcloud geschrieben werden: %2$s</string>
+    <string name="nc_rueck_offen">Noch %d Änderung(en) werden in die Nextcloud geschrieben. Bitte kurz warten und dann abmelden.</string>
 </resources>

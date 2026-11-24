@@ -11,7 +11,6 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.FrameLayout
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.FileProvider
 import androidx.recyclerview.widget.RecyclerView
 import ch.rosenweg4303.cloud.Eintrag
 import ch.rosenweg4303.cloud.Konto
@@ -37,7 +36,9 @@ import org.fossify.filemanager.R
 import org.fossify.filemanager.databinding.ActivityNextcloudBinding
 import org.fossify.filemanager.databinding.ItemFileDirListBinding
 import org.fossify.filemanager.helpers.alsOrtChip
-import java.io.File
+import org.fossify.filemanager.nextcloud.Nextcloud
+import org.fossify.filemanager.nextcloud.Nextcloud.APP_NAME
+import org.fossify.filemanager.nextcloud.Rueckschreiben
 
 /**
  * Rosenweg Files: die Dateien der Person in der Rosenweg-Nextcloud.
@@ -45,6 +46,10 @@ import java.io.File
  * Grundregel: Die Dateien bleiben in der Nextcloud. Zum Oeffnen wird nur in den
  * Cache geladen; der Cache wird beim Abmelden geleert und alte Kopien beim
  * naechsten Start entfernt. Braucht keine andere Rosenweg-App.
+ *
+ * Geoeffnet wird ueber den NextcloudProvider: Die App, die die Datei anzeigt,
+ * darf sie (wenn die Nextcloud es erlaubt) auch speichern — die Aenderung geht
+ * zurueck in die Nextcloud.
  */
 class NextcloudActivity : SimpleActivity() {
     private val binding by viewBinding(ActivityNextcloudBinding::inflate)
@@ -53,6 +58,7 @@ class NextcloudActivity : SimpleActivity() {
     private var pfad = ""
     private var eintraege = listOf<Eintrag>()
     private var login: LoginFlow? = null
+    private var ersterResume = true
 
     private val dateienWaehlen = registerForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
         if (uris.isNotEmpty()) hochladen(uris)
@@ -81,7 +87,8 @@ class NextcloudActivity : SimpleActivity() {
                 true
             }
         }
-        ensureBackgroundThread { cacheAufraeumen(maxAlterMs = 60 * 60 * 1000L) }
+        ensureBackgroundThread { Nextcloud.cacheAufraeumen(this, maxAlterMs = 60 * 60 * 1000L) }
+        Rueckschreiben.anstossen(this)
         dav = speicher.laden()?.let { WebDav(it, APP_NAME) }
         anzeigen()
         if (dav != null) laden()
@@ -95,6 +102,9 @@ class NextcloudActivity : SimpleActivity() {
         binding.ncLogin.setTextColor(getProperPrimaryColor())
         binding.ncOrtIntern.alsOrtChip(aktiv = false, symbol = org.fossify.commons.R.drawable.ic_phone_vector)
         binding.ncOrtNextcloud.alsOrtChip(aktiv = true)
+        // zurueck aus einer App, die eine Datei bearbeitet hat: Liste auffrischen
+        if (!ersterResume && dav != null && login == null) laden()
+        ersterResume = false
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -148,6 +158,8 @@ class NextcloudActivity : SimpleActivity() {
                 runOnUiThread { browserOeffnen(flow.anmeldeAdresse) }
                 val konto = flow.warten()
                 speicher.speichern(konto)
+                Nextcloud.anmeldungGeaendert(this)
+                Rueckschreiben.anstossen(this)
                 runOnUiThread {
                     login = null
                     dav = WebDav(konto, APP_NAME)
@@ -175,16 +187,24 @@ class NextcloudActivity : SimpleActivity() {
     }
 
     private fun abmeldenFragen() {
+        val offen = Rueckschreiben.anzahl(this)
+        if (offen > 0) {
+            // Grundregel: nichts verlieren, was noch nicht in der Nextcloud ist
+            Rueckschreiben.anstossen(this)
+            toast(getString(R.string.nc_rueck_offen, offen))
+            return
+        }
         ConfirmationDialog(this, getString(R.string.nc_abmelden_frage), positive = R.string.yes, negative = R.string.no) {
             val alt = dav
             dav = null
             eintraege = emptyList()
             pfad = ""
             speicher.loeschen()
+            Nextcloud.anmeldungGeaendert(this)
             anzeigen()
             ensureBackgroundThread {
                 alt?.appPasswortWiderrufen()
-                cacheAufraeumen(maxAlterMs = 0)
+                Nextcloud.cacheAufraeumen(this, maxAlterMs = 0)
             }
         }
     }
@@ -193,6 +213,7 @@ class NextcloudActivity : SimpleActivity() {
         dav = null
         eintraege = emptyList()
         speicher.loeschen()
+        Nextcloud.anmeldungGeaendert(this)
         anzeigen()
     }
 
@@ -282,40 +303,32 @@ class NextcloudActivity : SimpleActivity() {
             return
         }
         val d = dav ?: return
-        // je Version eigener Ordner: eine geaenderte Datei wird neu geladen
-        val ziel = File(File(cacheOrdner(), e.etag.ifEmpty { "x" }.replace(Regex("[^A-Za-z0-9]"), "")), e.name)
+        // vorab in den Cache laden, damit die andere App nicht auf das Netz wartet
+        val ziel = Nextcloud.cacheDatei(this, e)
         if (ziel.exists()) {
-            zeigen(ziel, e.mime)
+            zeigen(e)
             return
         }
         toast(getString(R.string.nc_wird_geladen, e.name))
         ensureBackgroundThread {
             try {
                 d.herunterladen(e.pfad, ziel)
-                runOnUiThread { zeigen(ziel, e.mime) }
+                runOnUiThread { zeigen(e) }
             } catch (ex: Exception) {
                 runOnUiThread { fehler(ex) }
             }
         }
     }
 
-    private fun zeigen(datei: File, mime: String) {
-        val uri = FileProvider.getUriForFile(this, "$packageName.provider", datei)
-        val intent = Intent(Intent.ACTION_VIEW).setDataAndType(uri, mime).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    private fun zeigen(e: Eintrag) {
+        val uri = Nextcloud.dokumentUri(this, e.pfad)
+        var rechte = Intent.FLAG_GRANT_READ_URI_PERMISSION
+        if (e.darfSchreiben) rechte = rechte or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+        val intent = Intent(Intent.ACTION_VIEW).setDataAndType(uri, e.mime).addFlags(rechte)
         try {
             startActivity(intent)
         } catch (e: ActivityNotFoundException) {
             toast(R.string.nc_keine_app)
-        }
-    }
-
-    private fun cacheOrdner() = File(cacheDir, "nextcloud")
-
-    /** Grundregel: auf dem Telefon nur Zwischenspeicher. */
-    private fun cacheAufraeumen(maxAlterMs: Long) {
-        val grenze = System.currentTimeMillis() - maxAlterMs
-        cacheOrdner().listFiles()?.forEach { d ->
-            if (maxAlterMs == 0L || d.lastModified() < grenze) d.deleteRecursively()
         }
     }
 
@@ -394,6 +407,5 @@ class NextcloudActivity : SimpleActivity() {
 
     private companion object {
         const val PFAD = "pfad"
-        const val APP_NAME = "Rosenweg Files (Android)"
     }
 }

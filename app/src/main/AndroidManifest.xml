@@ -177,6 +177,18 @@
                 android:resource="@xml/provider_paths" />
         </provider>
 
+        <!-- Rosenweg: Nextcloud in der Dateiauswahl des Systems -->
+        <provider
+            android:name=".nextcloud.NextcloudProvider"
+            android:authorities="${applicationId}.nextcloud"
+            android:exported="true"
+            android:grantUriPermissions="true"
+            android:permission="android.permission.MANAGE_DOCUMENTS">
+            <intent-filter>
+                <action android:name="android.content.action.DOCUMENTS_PROVIDER" />
+            </intent-filter>
+        </provider>
+
         <activity-alias
             android:name=".activities.SplashActivity.Red"
             android:enabled="false"
