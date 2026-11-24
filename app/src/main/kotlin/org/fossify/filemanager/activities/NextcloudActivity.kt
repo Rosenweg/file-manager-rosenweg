@@ -35,6 +35,7 @@ import org.fossify.commons.helpers.ensureBackgroundThread
 import org.fossify.filemanager.R
 import org.fossify.filemanager.databinding.ActivityNextcloudBinding
 import org.fossify.filemanager.databinding.ItemFileDirListBinding
+import org.fossify.filemanager.extensions.config
 import org.fossify.filemanager.helpers.alsOrtChip
 import org.fossify.filemanager.nextcloud.Nextcloud
 import org.fossify.filemanager.nextcloud.Nextcloud.APP_NAME
@@ -243,7 +244,8 @@ class NextcloudActivity : SimpleActivity() {
                     }
                 }
                 runOnUiThread {
-                    if (ziel == pfad) eintraege = liste
+                    // versteckte Dateien (.cache, .config ... der Linux-Stationen) wie lokal nur auf Wunsch
+                    if (ziel == pfad) eintraege = if (config.shouldShowHidden()) liste else liste.filterNot { it.name.startsWith(".") }
                     binding.ncRefresh.isRefreshing = false
                     anzeigen()
                 }

@@ -18,6 +18,7 @@ import ch.rosenweg4303.cloud.KontoSpeicher
 import ch.rosenweg4303.cloud.NextcloudFehler
 import ch.rosenweg4303.cloud.WebDav
 import org.fossify.filemanager.R
+import org.fossify.filemanager.extensions.config
 import java.io.ByteArrayInputStream
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -97,7 +98,8 @@ class NextcloudProvider : DocumentsProvider() {
             val dav = dav()
             val liste = netz { dav.liste(pfad) }
             Listen.merken(pfad, liste)
-            liste.forEach { zeile(c, it) }
+            val versteckte = ctx.config.shouldShowHidden()
+            liste.filter { versteckte || !it.name.startsWith(".") }.forEach { zeile(c, it) }
         } catch (e: IOException) {
             c.extras = Bundle().apply { putString(DocumentsContract.EXTRA_ERROR, "Nextcloud: ${e.message}") }
         }
