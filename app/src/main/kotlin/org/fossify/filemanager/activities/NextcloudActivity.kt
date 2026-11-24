@@ -36,6 +36,7 @@ import org.fossify.commons.helpers.ensureBackgroundThread
 import org.fossify.filemanager.R
 import org.fossify.filemanager.databinding.ActivityNextcloudBinding
 import org.fossify.filemanager.databinding.ItemFileDirListBinding
+import org.fossify.filemanager.helpers.alsOrtChip
 import java.io.File
 
 /**
@@ -68,6 +69,7 @@ class NextcloudActivity : SimpleActivity() {
             ncRefresh.setOnRefreshListener { laden() }
             ncLogin.paintFlags = ncLogin.paintFlags or Paint.UNDERLINE_TEXT_FLAG
             ncLogin.setOnClickListener { anmelden() }
+            ncOrtIntern.setOnClickListener { finish() }
             ncToolbar.setOnMenuItemClickListener { item ->
                 when (item.itemId) {
                     R.id.nc_hochladen -> dateienWaehlen.launch(arrayOf("*/*"))
@@ -91,6 +93,8 @@ class NextcloudActivity : SimpleActivity() {
         binding.ncToolbar.setNavigationOnClickListener { if (!hoch()) finish() }
         binding.ncPlaceholder.setTextColor(getProperTextColor())
         binding.ncLogin.setTextColor(getProperPrimaryColor())
+        binding.ncOrtIntern.alsOrtChip(aktiv = false, symbol = org.fossify.commons.R.drawable.ic_phone_vector)
+        binding.ncOrtNextcloud.alsOrtChip(aktiv = true)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

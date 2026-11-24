@@ -4,11 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:ignore="AppCompatResource">
     <item
-        android:id="@+id/nextcloud"
-        android:icon="@drawable/ic_cloud_vector"
-        android:title="@string/nc_titel"
-        app:showAsAction="always" />
-    <item
         android:id="@+id/go_home"
         android:icon="@drawable/ic_home_vector"
         android:title="@string/go_to_home_folder"

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="nc_titel">Nextcloud</string>
+    <string name="nc_intern">Intern</string>
     <string name="nc_hochladen">Hochladen</string>
     <string name="nc_neuer_ordner">Neuer Ordner</string>
     <string name="nc_aktualisieren">Aktualisieren</string>

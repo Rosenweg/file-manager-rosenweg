@@ -234,10 +234,6 @@ class MainActivity : SimpleActivity() {
             }
 
             requireToolbar().setOnMenuItemClickListener { menuItem ->
-                if (menuItem.itemId == R.id.nextcloud) {
-                    startActivity(Intent(this@MainActivity, NextcloudActivity::class.java))
-                    return@setOnMenuItemClickListener true
-                }
                 if (getCurrentFragment() == null) {
                     return@setOnMenuItemClickListener true
                 }

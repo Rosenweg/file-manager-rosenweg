@@ -32,10 +32,50 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
+            <LinearLayout
+                android:id="@+id/nc_orte"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/medium_margin"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="@dimen/activity_margin"
+                android:paddingTop="@dimen/small_margin"
+                android:paddingEnd="@dimen/activity_margin"
+                android:paddingBottom="@dimen/small_margin">
+
+                <org.fossify.commons.views.MyTextView
+                    android:id="@+id/nc_ort_intern"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/small_margin"
+                    android:background="@drawable/breadcrumb_button_background"
+                    android:gravity="center_vertical"
+                    android:minHeight="@dimen/breadcrumbs_layout_height"
+                    android:paddingHorizontal="@dimen/normal_margin"
+                    android:paddingVertical="@dimen/medium_margin"
+                    android:text="@string/nc_intern"
+                    android:textSize="@dimen/normal_text_size" />
+
+                <org.fossify.commons.views.MyTextView
+                    android:id="@+id/nc_ort_nextcloud"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/small_margin"
+                    android:background="@drawable/breadcrumb_button_background"
+                    android:gravity="center_vertical"
+                    android:minHeight="@dimen/breadcrumbs_layout_height"
+                    android:paddingHorizontal="@dimen/normal_margin"
+                    android:paddingVertical="@dimen/medium_margin"
+                    android:text="@string/nc_titel"
+                    android:textSize="@dimen/normal_text_size" />
+            </LinearLayout>
+
             <org.fossify.commons.views.MyRecyclerView
                 android:id="@+id/nc_list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:layout_below="@+id/nc_orte"
                 android:clipToPadding="false"
                 app:layoutManager="org.fossify.commons.views.MyLinearLayoutManager"
                 tools:listitem="@layout/item_file_dir_list" />
@@ -44,6 +84,7 @@
                 android:id="@+id/nc_placeholder"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_below="@+id/nc_orte"
                 android:alpha="0.8"
                 android:gravity="center"
                 android:lineSpacingExtra="@dimen/tiny_margin"
