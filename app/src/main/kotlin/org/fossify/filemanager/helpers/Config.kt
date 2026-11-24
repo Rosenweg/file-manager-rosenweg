@@ -69,7 +69,7 @@ class Config(context: Context) : BaseConfig(context) {
         set(isRootAvailable) = prefs.edit().putBoolean(IS_ROOT_AVAILABLE, isRootAvailable).apply()
 
     var enableRootAccess: Boolean
-        get() = prefs.getBoolean(ENABLE_ROOT_ACCESS, false)
+        get() = false   // Rosenweg: Root-Funktionen sind abgeschaltet
         set(enableRootAccess) = prefs.edit().putBoolean(ENABLE_ROOT_ACCESS, enableRootAccess).apply()
 
     var editorTextZoom: Float
