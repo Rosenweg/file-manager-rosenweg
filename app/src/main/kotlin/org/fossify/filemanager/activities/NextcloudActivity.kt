@@ -59,6 +59,8 @@ class NextcloudActivity : SimpleActivity() {
     private var eintraege = listOf<Eintrag>()
     private var login: LoginFlow? = null
     private var ersterResume = true
+    /** Beim ersten Laden in "Persönlich" springen (AD-Home), falls es den Ordner gibt. */
+    private var startOrdnerOffen = true
 
     private val dateienWaehlen = registerForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
         if (uris.isNotEmpty()) hochladen(uris)
@@ -68,6 +70,7 @@ class NextcloudActivity : SimpleActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         pfad = savedInstanceState?.getString(PFAD) ?: ""
+        if (savedInstanceState != null) startOrdnerOffen = false
         binding.apply {
             setupEdgeToEdge(padBottomSystem = listOf(ncList))
             setupMaterialScrollListener(ncList, ncAppbar)
@@ -164,6 +167,7 @@ class NextcloudActivity : SimpleActivity() {
                     login = null
                     dav = WebDav(konto, APP_NAME)
                     pfad = ""
+                    startOrdnerOffen = true
                     // zurueck in die App holen, falls der Browser noch vorne ist
                     startActivity(Intent(this, NextcloudActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT))
                     laden()
@@ -226,6 +230,18 @@ class NextcloudActivity : SimpleActivity() {
         ensureBackgroundThread {
             try {
                 val liste = d.liste(ziel)
+                if (startOrdnerOffen && ziel.isEmpty()) {
+                    startOrdnerOffen = false
+                    if (liste.any { it.istOrdner && it.pfad == PERSOENLICH }) {
+                        runOnUiThread {
+                            if (pfad.isEmpty()) {
+                                pfad = PERSOENLICH
+                                laden()
+                            }
+                        }
+                        return@ensureBackgroundThread
+                    }
+                }
                 runOnUiThread {
                     if (ziel == pfad) eintraege = liste
                     binding.ncRefresh.isRefreshing = false
@@ -436,6 +452,7 @@ class NextcloudActivity : SimpleActivity() {
 
     private companion object {
         const val PFAD = "pfad"
+        const val PERSOENLICH = "Persönlich"
         val OFFICE_ENDUNGEN = setOf("doc", "docx", "odt", "rtf", "xls", "xlsx", "ods", "ppt", "pptx", "odp")
     }
 }
