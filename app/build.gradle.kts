@@ -137,6 +137,8 @@ detekt {
 }
 
 dependencies {
+    // Rosenweg: Downloads automatisch hochladen (WorkManager, wie im Cloud-Modul)
+    implementation("androidx.work:work-runtime-ktx:2.12.0")
     implementation(libs.fossify.commons)
     implementation(libs.rosenweg.cloud)
     implementation(libs.androidx.documentfile)

@@ -80,6 +80,8 @@ class NextcloudActivity : SimpleActivity() {
             ncLogin.paintFlags = ncLogin.paintFlags or Paint.UNDERLINE_TEXT_FLAG
             ncLogin.setOnClickListener { anmelden() }
             ncOrtIntern.setOnClickListener { finish() }
+            // Stefan 25.11.2026: mit Rosenweg Geraet nur die Nextcloud; Downloads laden automatisch hoch
+            ncOrte.beVisibleIf(!ch.rosenweg4303.cloud.RosenwegAnmeldung.geraetDa(this@NextcloudActivity))
             ncToolbar.setOnMenuItemClickListener { item ->
                 when (item.itemId) {
                     R.id.nc_hochladen -> dateienWaehlen.launch(arrayOf("*/*"))

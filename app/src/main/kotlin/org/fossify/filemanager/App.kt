@@ -9,5 +9,7 @@ class App : FossifyApp() {
     override fun onCreate() {
         super.onCreate()
         Reprint.initialize(this)
+        // Rosenweg: auf geteilten Telefonen Downloads automatisch in die Nextcloud
+        org.fossify.filemanager.rosenweg.DownloadsHochladen.einrichten(this)
     }
 }

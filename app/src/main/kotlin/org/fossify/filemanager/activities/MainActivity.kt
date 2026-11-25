@@ -96,6 +96,14 @@ class MainActivity : SimpleActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         appLaunched(BuildConfig.APPLICATION_ID)
+        // Stefan 25.11.2026: mit Rosenweg Geraet (geteiltes Telefon) nur die Nextcloud - beim normalen
+        // Start (nicht beim Auswaehlen/Speichern fuer andere Apps) direkt dorthin
+        if (savedInstanceState == null && intent.action in listOf(null, Intent.ACTION_MAIN)
+            && ch.rosenweg4303.cloud.RosenwegAnmeldung.geraetDa(this)) {
+            startActivity(Intent(this, NextcloudActivity::class.java))
+            finish()
+            return
+        }
         setupOptionsMenu()
         refreshMenuItems()
         mTabsToShow = getTabsList()
