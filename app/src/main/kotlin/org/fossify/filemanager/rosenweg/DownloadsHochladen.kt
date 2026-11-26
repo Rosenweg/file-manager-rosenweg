@@ -1,6 +1,7 @@
 package org.fossify.filemanager.rosenweg
 
 import android.content.Context
+import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
@@ -43,6 +44,9 @@ object DownloadsHochladen {
 
     /** Wartet auf die naechste Aenderung bei den Downloads (einmalig, plant sich danach neu). */
     private fun sofortPlanen(c: Context) {
+        // MediaStore.Downloads gibt es erst ab Android 10 (minSdk 26): darunter nur die
+        // regelmaessige Pruefung alle 15 Minuten.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return
         val req = OneTimeWorkRequestBuilder<Pruefung>()
             .setConstraints(Constraints.Builder()
                 .addContentUriTrigger(MediaStore.Downloads.EXTERNAL_CONTENT_URI, true)
