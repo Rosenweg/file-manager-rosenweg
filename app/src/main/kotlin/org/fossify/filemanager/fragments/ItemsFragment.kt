@@ -1,6 +1,8 @@
 package org.fossify.filemanager.fragments
 
 import android.annotation.SuppressLint
+import org.fossify.filemanager.helpers.alsOrtChip
+import org.fossify.commons.extensions.beVisibleIf
 import android.content.Context
 import android.os.Parcelable
 import android.util.AttributeSet
@@ -50,6 +52,9 @@ class ItemsFragment(context: Context, attributeSet: AttributeSet) : MyViewPagerF
             this.activity = activity
             binding.apply {
                 breadcrumbs.listener = this@ItemsFragment
+                nextcloudChip.setOnClickListener {
+                    activity.startActivity(android.content.Intent(activity, org.fossify.filemanager.activities.NextcloudActivity::class.java))
+                }
                 itemsSwipeRefresh.setOnRefreshListener { refreshFragment() }
                 itemsFab.setOnClickListener {
                     if (isCreateDocumentIntent) {
@@ -79,6 +84,11 @@ class ItemsFragment(context: Context, attributeSet: AttributeSet) : MyViewPagerF
             if (currentPath != "") {
                 breadcrumbs.updateColor(textColor)
             }
+
+            // Nicht in Auswahl-Dialogen fuer andere Apps: die bekommen lokale Pfade
+            val auswahl = isGetContentIntent || isGetRingtonePicker || isCreateDocumentIntent
+            nextcloudChip.beVisibleIf(!auswahl)
+            nextcloudChip.alsOrtChip(aktiv = false)
 
             itemsSwipeRefresh.isEnabled = lastSearchedText.isEmpty() && activity?.config?.enablePullToRefresh != false
         }

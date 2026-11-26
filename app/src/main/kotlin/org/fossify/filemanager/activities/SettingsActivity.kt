@@ -254,7 +254,7 @@ class SettingsActivity : SimpleActivity() {
 
     private fun setupEnableRootAccess() {
         binding.apply {
-            settingsEnableRootAccessHolder.beVisibleIf(config.isRootAvailable)
+            settingsEnableRootAccessHolder.beVisibleIf(false)   // Rosenweg: kein Root
             settingsEnableRootAccess.isChecked = config.enableRootAccess
             settingsEnableRootAccessHolder.setOnClickListener {
                 if (!config.enableRootAccess) {

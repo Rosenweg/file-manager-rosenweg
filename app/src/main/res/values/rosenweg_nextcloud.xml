@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nc_titel">Nextcloud</string>
+    <string name="nc_intern">Intern</string>
+    <string name="nc_hochladen">Hochladen</string>
+    <string name="nc_neuer_ordner">Neuer Ordner</string>
+    <string name="nc_aktualisieren">Aktualisieren</string>
+    <string name="nc_abmelden">Von der Nextcloud abmelden</string>
+    <string name="nc_nicht_angemeldet">Deine Dateien liegen in der Rosenweg-Nextcloud.\nMelde dich einmal mit deinem Rosenweg-Konto an.</string>
+    <string name="nc_anmelden">Mit Rosenweg-Konto anmelden</string>
+    <string name="nc_warte_auf_anmeldung">Anmeldung im Browser abschliessen, dann hierher zurückkehren …</string>
+    <string name="nc_leer">Dieser Ordner ist leer</string>
+    <string name="nc_name">Name</string>
+    <string name="nc_umbenennen">Umbenennen</string>
+    <string name="nc_loeschen">In den Papierkorb</string>
+    <string name="nc_loeschen_frage">„%s“ in den Papierkorb der Nextcloud verschieben?</string>
+    <string name="nc_abmelden_frage">Von der Nextcloud abmelden? Auf diesem Gerät zwischengespeicherte Dateien werden gelöscht.</string>
+    <string name="nc_wird_geladen">„%s“ wird geladen …</string>
+    <string name="nc_hochgeladen">%d hochgeladen</string>
+    <string name="nc_fehler">Nextcloud: %s</string>
+    <string name="nc_keine_app">Keine App zum Öffnen gefunden</string>
+    <string name="nc_wurzel">Rosenweg Nextcloud</string>
+    <string name="nc_rueck_konflikt">%s: Die Datei wurde inzwischen in der Nextcloud geändert. Deine Fassung liegt daneben als Konfliktkopie.</string>
+    <string name="nc_rueck_gerettet">Keine Schreibrechte am Ort der Datei. Deine Fassung liegt in der Nextcloud unter %s.</string>
+    <string name="nc_rueck_fehler">%1$s konnte nicht in die Nextcloud geschrieben werden: %2$s</string>
+    <string name="nc_rueck_offen">Noch %d Änderung(en) werden in die Nextcloud geschrieben. Bitte kurz warten und dann abmelden.</string>
+    <string name="nc_in_euro_office">In Euro-Office bearbeiten (Browser)</string>
+    <string name="nc_mit_app">Mit App auf dem Telefon ansehen</string>
+    <string name="nc_im_browser">In der Nextcloud im Browser öffnen</string>
+</resources>

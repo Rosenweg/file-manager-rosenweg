@@ -111,7 +111,8 @@ android {
         )
     }
 
-    namespace = project.property("APP_ID").toString()
+    // Rosenweg: nur die applicationId ist eigen (ch.rosenweg4303.filemanager); Kotlin-Namensraum wie im Original.
+    namespace = "org.fossify.filemanager"
 
     lint {
         checkReleaseBuilds = false
@@ -136,7 +137,10 @@ detekt {
 }
 
 dependencies {
+    // Rosenweg: Downloads automatisch hochladen (WorkManager, wie im Cloud-Modul)
+    implementation("androidx.work:work-runtime-ktx:2.12.0")
     implementation(libs.fossify.commons)
+    implementation(libs.rosenweg.cloud)
     implementation(libs.androidx.documentfile)
     implementation(libs.androidx.swiperefreshlayout)
     implementation(libs.roottools)

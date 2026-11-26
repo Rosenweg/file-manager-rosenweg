@@ -16,15 +16,48 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <org.fossify.commons.views.Breadcrumbs
-                android:id="@+id/breadcrumbs"
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/breadcrumbs_holder"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/medium_margin"
-                android:paddingStart="@dimen/activity_margin"
-                android:paddingTop="@dimen/small_margin"
-                android:paddingEnd="@dimen/small_margin"
-                android:paddingBottom="@dimen/small_margin" />
+                android:layout_marginTop="@dimen/medium_margin">
+
+                <!-- Pfadleiste so breit wie noetig, schrumpft bei langen Pfaden;
+                     der Nextcloud-Chip folgt direkt dahinter. -->
+                <org.fossify.commons.views.Breadcrumbs
+                    android:id="@+id/breadcrumbs"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="@dimen/activity_margin"
+                    android:paddingTop="@dimen/small_margin"
+                    android:paddingEnd="@dimen/small_margin"
+                    android:paddingBottom="@dimen/small_margin"
+                    app:layout_constrainedWidth="true"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/nextcloud_chip"
+                    app:layout_constraintHorizontal_bias="0"
+                    app:layout_constraintHorizontal_chainStyle="packed"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <!-- Rosenweg: Wechsel in die Nextcloud der Person -->
+                <org.fossify.commons.views.MyTextView
+                    android:id="@+id/nextcloud_chip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/activity_margin"
+                    android:background="@drawable/breadcrumb_button_background"
+                    android:gravity="center_vertical"
+                    android:minHeight="@dimen/breadcrumbs_layout_height"
+                    android:paddingHorizontal="@dimen/normal_margin"
+                    android:paddingVertical="@dimen/medium_margin"
+                    android:text="@string/nc_titel"
+                    android:textSize="@dimen/normal_text_size"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/breadcrumbs"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <com.google.android.material.progressindicator.LinearProgressIndicator
                 android:id="@+id/progress_bar"
@@ -42,7 +75,7 @@
                 android:id="@+id/items_placeholder"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/breadcrumbs"
+                android:layout_below="@+id/breadcrumbs_holder"
                 android:layout_centerHorizontal="true"
                 android:alpha="0.8"
                 android:gravity="center"
@@ -72,7 +105,7 @@
                 android:id="@+id/items_swipe_refresh"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/breadcrumbs">
+                android:layout_below="@+id/breadcrumbs_holder">
 
                 <com.qtalk.recyclerviewfastscroller.RecyclerViewFastScroller
                     android:id="@+id/items_fastscroller"
