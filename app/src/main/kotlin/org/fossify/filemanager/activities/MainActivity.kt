@@ -123,7 +123,8 @@ class MainActivity : SimpleActivity() {
         if (savedInstanceState == null) {
             config.temporarilyShowHidden = false
             initFragments()
-            tryInitFileManager()
+            // Rosenweg: ohne Anmeldung die Speicher-Berechtigung erst nach dem Anmeldeschirm (onResume)
+            if (rosenwegAnmeldungNoetig()) rosenwegStartOffen = true else tryInitFileManager()
             checkWhatsNewDialog()
             checkIfRootAvailable()
             checkInvalidFavorites()
@@ -136,6 +137,12 @@ class MainActivity : SimpleActivity() {
             config.lastUsedViewPagerPage = 0
             System.exit(0)
             return
+        }
+
+        if (rosenwegAnmeldungNoetig() && ch.rosenweg4303.cloud.RosenwegAnmeldeSchirm.zeigenFallsNoetig(this, nextcloud = true)) return
+        if (rosenwegStartOffen) {
+            rosenwegStartOffen = false
+            tryInitFileManager()
         }
 
         refreshMenuItems()
@@ -161,6 +168,22 @@ class MainActivity : SimpleActivity() {
         if (binding.mainViewPager.adapter == null) {
             initFragments()
         }
+    }
+
+    /** Rosenweg: Start wartet auf die Anmeldung (eigenes Handy), wird in onResume nachgeholt. */
+    private var rosenwegStartOffen = false
+
+    /**
+     * Rosenweg (Stefan 26.11.2026): auf dem eigenen Handy ist die App ohne Anmeldung nicht nutzbar,
+     * es kommt der gemeinsame Anmeldeschirm (commons-rosenweg: Karte oder Rosenweg-Konto, "Zurueck"
+     * schliesst die App). Geteilte Telefone (Rosenweg Geraet): nie, dort gilt dessen Anmeldung.
+     * Nicht beim Auswaehlen/Speichern fuer andere Apps (Datei, Klingelton) - das geht ohne Nextcloud.
+     */
+    private fun rosenwegAnmeldungNoetig(): Boolean {
+        val fuerAndereApp = intent.action in listOf(
+            Intent.ACTION_GET_CONTENT, Intent.ACTION_PICK, Intent.ACTION_CREATE_DOCUMENT, RingtoneManager.ACTION_RINGTONE_PICKER
+        )
+        return !fuerAndereApp && ch.rosenweg4303.cloud.RosenwegAnmeldung.anmeldungNoetig(this)
     }
 
     override fun onPause() {
