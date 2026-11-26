@@ -110,6 +110,19 @@ class NextcloudActivity : SimpleActivity() {
         binding.ncOrtNextcloud.alsOrtChip(aktiv = true)
         // zurueck aus einer App, die eine Datei bearbeitet hat: Liste auffrischen
         if (!ersterResume && dav != null && login == null) laden()
+        // zurueck vom gemeinsamen Anmeldeschirm: der Schirm hat den Nextcloud-Zugang meist schon
+        // geholt (oder er kommt eben im Hintergrund) - sonst hier holen
+        if (wartetAufSchirm) {
+            wartetAufSchirm = false
+            if (dav == null) speicher.laden()?.let { k ->
+                dav = WebDav(k, APP_NAME)
+                pfad = ""
+                startOrdnerOffen = true
+                Nextcloud.anmeldungGeaendert(this)
+                laden()
+            }
+            if (dav == null && ch.rosenweg4303.cloud.RosenwegAnmeldung.angemeldet(this)) anmelden()
+        }
         ersterResume = false
     }
 
@@ -154,7 +167,49 @@ class NextcloudActivity : SimpleActivity() {
 
     // ---- Anmelden / Abmelden ----
 
+    /** Gemeinsamer Anmeldeschirm (Karte oder Rosenweg-Konto) ist offen. */
+    private var wartetAufSchirm = false
+
+    /**
+     * Eigenes Handy (Stefan 26.11.2026, ab v36): erst in der App anmelden - gemeinsamer
+     * Anmeldeschirm aus commons-rosenweg (Rosenweg-Karte oder Rosenweg-Konto, wie der Sperrbildschirm
+     * der geteilten Telefone) -, dann holt NextcloudZugang (commons) das App-Passwort von der Anlage.
+     * Geht das nicht, bleibt die Anmeldung direkt bei der Nextcloud im Browser.
+     */
     private fun anmelden() {
+        val anmeldung = ch.rosenweg4303.cloud.RosenwegAnmeldung
+        if (anmeldung.geraetDa(this)) {
+            loginFlow()
+            return
+        }
+        if (!anmeldung.angemeldet(this)) {
+            wartetAufSchirm = true
+            // ohne Anmeldung ist die App nicht nutzbar: "Zurueck" auf dem Schirm schliesst sie (Standard);
+            // der Schirm holt nach der Anmeldung gleich den Nextcloud-Zugang (commons Cloud 0.10.0)
+            startActivity(Intent(this, ch.rosenweg4303.cloud.RosenwegAnmeldeSchirm::class.java)
+                .putExtra(ch.rosenweg4303.cloud.RosenwegAnmeldeSchirm.EXTRA_NEXTCLOUD, true))
+            return
+        }
+        ensureBackgroundThread {
+            try {
+                val konto = ch.rosenweg4303.cloud.NextcloudZugang.holen(this, APP_NAME)
+                speicher.speichern(konto)
+                Nextcloud.anmeldungGeaendert(this)
+                Rueckschreiben.anstossen(this)
+                runOnUiThread {
+                    dav = WebDav(konto, APP_NAME)
+                    pfad = ""
+                    startOrdnerOffen = true
+                    laden()
+                }
+            } catch (e: Exception) {
+                runOnUiThread { loginFlow() }   // z.B. Anlage ohne diesen Weg: direkt bei der Nextcloud
+            }
+        }
+    }
+
+    /** Anmeldung direkt bei der Nextcloud im Browser (Login-Flow v2). */
+    private fun loginFlow() {
         val flow = LoginFlow(APP_NAME)
         login = flow
         anzeigen()
@@ -207,6 +262,9 @@ class NextcloudActivity : SimpleActivity() {
             eintraege = emptyList()
             pfad = ""
             speicher.loeschen()
+            // eigenes Handy: Nextcloud-Zugang und Anmeldung der App gehoeren zusammen (der Zugang kommt
+            // nach der Anmeldung von selbst) - auch die App abmelden; beim naechsten Oeffnen kommt der Schirm
+            if (!ch.rosenweg4303.cloud.RosenwegAnmeldung.geraetDa(this)) ch.rosenweg4303.cloud.RosenwegAnmeldung.abmelden(this)
             Nextcloud.anmeldungGeaendert(this)
             anzeigen()
             ensureBackgroundThread {
