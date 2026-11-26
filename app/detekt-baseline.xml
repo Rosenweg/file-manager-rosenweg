@@ -88,6 +88,7 @@
     <ID>MaxLineLength:ItemsFragment.kt$ItemsFragment.&lt;no name provided&gt;$return</ID>
     <ID>MaxLineLength:ListItem.kt$ListItem$val mPath: String</ID>
     <ID>MaxLineLength:MainActivity.kt$MainActivity$// used at apps that have no file access at all, but need to work with files. For example Simple Calendar uses this at exporting events into a file</ID>
+    <ID>MaxLineLength:MainActivity.kt$MainActivity$Intent.ACTION_GET_CONTENT</ID>
     <ID>MaxLineLength:MainActivity.kt$MainActivity$findItem(R.id.add_favorite).isVisible = currentFragment is ItemsFragment &amp;&amp; !favorites.contains(currentFragment.currentPath)</ID>
     <ID>MaxLineLength:MainActivity.kt$MainActivity$findItem(R.id.column_count).isVisible = currentViewType == VIEW_TYPE_GRID &amp;&amp; currentFragment !is StorageFragment</ID>
     <ID>MaxLineLength:MainActivity.kt$MainActivity$findItem(R.id.go_home).isVisible = currentFragment is ItemsFragment &amp;&amp; currentFragment.currentPath != config.homeFolder</ID>
@@ -98,6 +99,7 @@
     <ID>MaxLineLength:MainActivity.kt$MainActivity$findItem(R.id.toggle_filename).isVisible = currentViewType == VIEW_TYPE_GRID &amp;&amp; currentFragment !is StorageFragment</ID>
     <ID>MaxLineLength:MainActivity.kt$MainActivity$getStorageDirectories().firstOrNull { it.trimEnd('/') != internalStoragePath &amp;&amp; it.trimEnd('/') != sdCardPath }</ID>
     <ID>MaxLineLength:MainActivity.kt$MainActivity$if</ID>
+    <ID>MaxLineLength:MainActivity.kt$MainActivity$if (rosenwegAnmeldungNoetig() &amp;&amp; ch.rosenweg4303.cloud.RosenwegAnmeldeSchirm.zeigenFallsNoetig(this, nextcloud = true)) return</ID>
     <ID>MaxLineLength:MainActivity.kt$MainActivity$private fun getInactiveTabIndexes(activeIndex: Int)</ID>
     <ID>MaxLineLength:MainActivity.kt$MainActivity$resultIntent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION</ID>
     <ID>MaxLineLength:MainActivity.kt$MainActivity$val licenses = LICENSE_GLIDE or LICENSE_PATTERN or LICENSE_REPRINT or LICENSE_GESTURE_VIEWS or LICENSE_AUTOFITTEXTVIEW or LICENSE_ZIP4J</ID>
@@ -109,6 +111,7 @@
     <ID>MaxLineLength:NextcloudActivity.kt$NextcloudActivity$ConfirmationDialog</ID>
     <ID>MaxLineLength:NextcloudActivity.kt$NextcloudActivity$contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE), null, null, null)</ID>
     <ID>MaxLineLength:NextcloudActivity.kt$NextcloudActivity$d.hochladen(kind(name), { contentResolver.openInputStream(uri)!! }, laenge, contentResolver.getType(uri))</ID>
+    <ID>MaxLineLength:NextcloudActivity.kt$NextcloudActivity$if (!ch.rosenweg4303.cloud.RosenwegAnmeldung.geraetDa(this)) ch.rosenweg4303.cloud.RosenwegAnmeldung.abmelden(this)</ID>
     <ID>MaxLineLength:NextcloudActivity.kt$NextcloudActivity$if (!e.istOrdner &amp;&amp; e.fileId &gt; 0 &amp;&amp; d != null) punkte += getString(R.string.nc_im_browser) to { browserOeffnen(d.webAdresse(e)) }</ID>
     <ID>MaxLineLength:NextcloudActivity.kt$NextcloudActivity$if (e.darfUmbenennen) punkte += getString(R.string.nc_umbenennen) to { nameAbfragen(R.string.nc_umbenennen, e.name) { umbenennen(e, it) } }</ID>
     <ID>MaxLineLength:NextcloudActivity.kt$NextcloudActivity$if (name.isEmpty() || name.contains('/') || name == "." || name == "..") return@setOnClickListener</ID>
@@ -144,6 +147,7 @@
     <ID>SwallowedException:ItemsAdapter.kt$ItemsAdapter$e: Exception</ID>
     <ID>SwallowedException:MimeTypesActivity.kt$MimeTypesActivity$e: Exception</ID>
     <ID>SwallowedException:NextcloudActivity.kt$NextcloudActivity$e: ActivityNotFoundException</ID>
+    <ID>SwallowedException:NextcloudActivity.kt$NextcloudActivity$e: Exception</ID>
     <ID>SwallowedException:NextcloudProvider.kt$NextcloudProvider$e: IOException</ID>
     <ID>SwallowedException:NextcloudProvider.kt$NextcloudProvider$e: IllegalArgumentException</ID>
     <ID>SwallowedException:NextcloudProvider.kt$NextcloudProvider$e: NextcloudFehler</ID>
