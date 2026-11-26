@@ -139,7 +139,7 @@ class MainActivity : SimpleActivity() {
             return
         }
 
-        if (rosenwegAnmeldungNoetig() && ch.rosenweg4303.cloud.RosenwegAnmeldeSchirm.zeigenFallsNoetig(this)) return
+        if (rosenwegAnmeldungNoetig() && ch.rosenweg4303.cloud.RosenwegAnmeldeSchirm.zeigenFallsNoetig(this, nextcloud = true)) return
         if (rosenwegStartOffen) {
             rosenwegStartOffen = false
             tryInitFileManager()

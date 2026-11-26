@@ -110,9 +110,17 @@ class NextcloudActivity : SimpleActivity() {
         binding.ncOrtNextcloud.alsOrtChip(aktiv = true)
         // zurueck aus einer App, die eine Datei bearbeitet hat: Liste auffrischen
         if (!ersterResume && dav != null && login == null) laden()
-        // zurueck vom gemeinsamen Anmeldeschirm: angemeldet -> Nextcloud-Zugang holen
+        // zurueck vom gemeinsamen Anmeldeschirm: der Schirm hat den Nextcloud-Zugang meist schon
+        // geholt (oder er kommt eben im Hintergrund) - sonst hier holen
         if (wartetAufSchirm) {
             wartetAufSchirm = false
+            if (dav == null) speicher.laden()?.let { k ->
+                dav = WebDav(k, APP_NAME)
+                pfad = ""
+                startOrdnerOffen = true
+                Nextcloud.anmeldungGeaendert(this)
+                laden()
+            }
             if (dav == null && ch.rosenweg4303.cloud.RosenwegAnmeldung.angemeldet(this)) anmelden()
         }
         ersterResume = false
@@ -176,8 +184,10 @@ class NextcloudActivity : SimpleActivity() {
         }
         if (!anmeldung.angemeldet(this)) {
             wartetAufSchirm = true
-            // ohne Anmeldung ist die App nicht nutzbar: "Zurueck" auf dem Schirm schliesst sie (Standard)
-            startActivity(Intent(this, ch.rosenweg4303.cloud.RosenwegAnmeldeSchirm::class.java))
+            // ohne Anmeldung ist die App nicht nutzbar: "Zurueck" auf dem Schirm schliesst sie (Standard);
+            // der Schirm holt nach der Anmeldung gleich den Nextcloud-Zugang (commons Cloud 0.10.0)
+            startActivity(Intent(this, ch.rosenweg4303.cloud.RosenwegAnmeldeSchirm::class.java)
+                .putExtra(ch.rosenweg4303.cloud.RosenwegAnmeldeSchirm.EXTRA_NEXTCLOUD, true))
             return
         }
         ensureBackgroundThread {
@@ -252,6 +262,9 @@ class NextcloudActivity : SimpleActivity() {
             eintraege = emptyList()
             pfad = ""
             speicher.loeschen()
+            // eigenes Handy: Nextcloud-Zugang und Anmeldung der App gehoeren zusammen (der Zugang kommt
+            // nach der Anmeldung von selbst) - auch die App abmelden; beim naechsten Oeffnen kommt der Schirm
+            if (!ch.rosenweg4303.cloud.RosenwegAnmeldung.geraetDa(this)) ch.rosenweg4303.cloud.RosenwegAnmeldung.abmelden(this)
             Nextcloud.anmeldungGeaendert(this)
             anzeigen()
             ensureBackgroundThread {
