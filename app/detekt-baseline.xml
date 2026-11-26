@@ -7,12 +7,17 @@
     <ID>ComplexCondition:ItemsAdapter.kt$ItemsAdapter$hasOTGConnected &amp;&amp; itemToLoad is String &amp;&amp; activity.isPathOnOTG(itemToLoad) &amp;&amp; baseConfig.OTGTreeUri.isNotEmpty() &amp;&amp; baseConfig.OTGPartition.isNotEmpty()</ID>
     <ID>ComplexCondition:MainActivity.kt$MainActivity$!config.wasOTGHandled &amp;&amp; hasPermission(PERMISSION_WRITE_STORAGE) &amp;&amp; hasOTGConnected() &amp;&amp; config.OTGPath.isEmpty()</ID>
     <ID>ComplexCondition:MimeTypesActivity.kt$MimeTypesActivity$mimetype != "image" &amp;&amp; mimetype != "video" &amp;&amp; mimetype != "audio" &amp;&amp; mimetype != "text" &amp;&amp; !extraAudioMimeTypes.contains(fullMimetype) &amp;&amp; !extraDocumentMimeTypes.contains(fullMimetype) &amp;&amp; !archiveMimeTypes.contains(fullMimetype)</ID>
+    <ID>ComplexCondition:NextcloudActivity.kt$NextcloudActivity$name.isEmpty() || name.contains('/') || name == "." || name == ".."</ID>
+    <ID>ComplexCondition:NextcloudProvider.kt$NextcloudProvider$n.isEmpty() || n.contains('/') || n == "." || n == ".."</ID>
     <ID>ComplexCondition:ReadTextActivity.kt$ReadTextActivity$requestCode == SELECT_SAVE_FILE_INTENT &amp;&amp; resultCode == Activity.RESULT_OK &amp;&amp; resultData != null &amp;&amp; resultData.data != null</ID>
     <ID>CyclomaticComplexMethod:DecompressActivity.kt$DecompressActivity$private fun decompressTo(destination: String)</ID>
+    <ID>CyclomaticComplexMethod:DownloadsHochladen.kt$DownloadsHochladen$fun pruefen(c: Context)</ID>
     <ID>CyclomaticComplexMethod:ItemsAdapter.kt$ItemsAdapter$@SuppressLint("NewApi") private fun compressPaths( sourcePaths: List&lt;String&gt;, targetPath: String, password: String? = null ): Boolean</ID>
     <ID>CyclomaticComplexMethod:ItemsAdapter.kt$ItemsAdapter$override fun actionItemPressed(id: Int)</ID>
     <ID>CyclomaticComplexMethod:MainActivity.kt$MainActivity$private fun setupOptionsMenu()</ID>
     <ID>CyclomaticComplexMethod:MimeTypesActivity.kt$MimeTypesActivity$private fun getProperFileDirItems(callback: (ArrayList&lt;FileDirItem&gt;) -&gt; Unit)</ID>
+    <ID>CyclomaticComplexMethod:NextcloudProvider.kt$NextcloudProvider$override fun openDocument(documentId: String, mode: String, signal: CancellationSignal?): ParcelFileDescriptor</ID>
+    <ID>CyclomaticComplexMethod:Rueckschreiben.kt$Rueckschreiben$private fun hochladen(ctx: Context, dav: WebDav, dir: File, p: Properties)</ID>
     <ID>CyclomaticComplexMethod:StorageFragment.kt$StorageFragment$private fun getSizesByMimeType(volumeName: String): HashMap&lt;String, Long&gt;</ID>
     <ID>EmptyCatchBlock:MimeTypesActivity.kt$MimeTypesActivity${ }</ID>
     <ID>EmptyCatchBlock:StorageFragment.kt$StorageFragment${ }</ID>
@@ -21,8 +26,10 @@
     <ID>EmptyFunctionBlock:ManageFavoritesAdapter.kt$ManageFavoritesAdapter${}</ID>
     <ID>EmptyFunctionBlock:MimeTypesActivity.kt$MimeTypesActivity${}</ID>
     <ID>EmptyFunctionBlock:StorageFragment.kt$StorageFragment${}</ID>
+    <ID>InstanceOfCheckForException:NextcloudProvider.kt$NextcloudProvider$e is FileNotFoundException</ID>
     <ID>LargeClass:ItemsAdapter.kt$ItemsAdapter : MyRecyclerViewAdapterOnPopupTextUpdate</ID>
     <ID>LoopWithTooManyJumpStatements:DecompressActivity.kt$DecompressActivity$while</ID>
+    <ID>LoopWithTooManyJumpStatements:DownloadsHochladen.kt$DownloadsHochladen$for</ID>
     <ID>LoopWithTooManyJumpStatements:StorageFragment.kt$StorageFragment$do</ID>
     <ID>MagicNumber:Config.kt$Config$1.2f</ID>
     <ID>MagicNumber:Config.kt$Config$4</ID>
@@ -30,16 +37,29 @@
     <ID>MagicNumber:DecompressActivity.kt$DecompressActivity$1024</ID>
     <ID>MagicNumber:DecompressItemsAdapter.kt$DecompressItemsAdapter$0.8f</ID>
     <ID>MagicNumber:DecompressItemsAdapter.kt$DecompressItemsAdapter$180</ID>
+    <ID>MagicNumber:DownloadsHochladen.kt$DownloadsHochladen$10</ID>
+    <ID>MagicNumber:DownloadsHochladen.kt$DownloadsHochladen$15</ID>
+    <ID>MagicNumber:DownloadsHochladen.kt$DownloadsHochladen$15_000</ID>
     <ID>MagicNumber:ItemsAdapter.kt$ItemsAdapter$0.8f</ID>
     <ID>MagicNumber:ItemsAdapter.kt$ItemsAdapter$10</ID>
     <ID>MagicNumber:ItemsAdapter.kt$ItemsAdapter$180</ID>
     <ID>MagicNumber:ItemsAdapter.kt$ItemsAdapter$4</ID>
     <ID>MagicNumber:ItemsFragment.kt$ItemsFragment$3</ID>
+    <ID>MagicNumber:NextcloudProvider.kt$NextcloudProvider$404</ID>
     <ID>MagicNumber:ReadTextActivity.kt$ReadTextActivity$250</ID>
     <ID>MagicNumber:ReadTextActivity.kt$ReadTextActivity$50</ID>
     <ID>MagicNumber:RecentsFragment.kt$RecentsFragment$3</ID>
     <ID>MagicNumber:RecentsFragment.kt$RecentsFragment$50</ID>
     <ID>MagicNumber:RootHelpers.kt$RootHelpers.&lt;no name provided&gt;$5</ID>
+    <ID>MagicNumber:Rueckschreiben.kt$Rueckschreiben$15</ID>
+    <ID>MagicNumber:Rueckschreiben.kt$Rueckschreiben$300</ID>
+    <ID>MagicNumber:Rueckschreiben.kt$Rueckschreiben$403</ID>
+    <ID>MagicNumber:Rueckschreiben.kt$Rueckschreiben$404</ID>
+    <ID>MagicNumber:Rueckschreiben.kt$Rueckschreiben$405</ID>
+    <ID>MagicNumber:Rueckschreiben.kt$Rueckschreiben$409</ID>
+    <ID>MagicNumber:Rueckschreiben.kt$Rueckschreiben$412</ID>
+    <ID>MagicNumber:Rueckschreiben.kt$Rueckschreiben$60</ID>
+    <ID>MagicNumber:Rueckschreiben.kt$Rueckschreiben$900</ID>
     <ID>MagicNumber:StorageFragment.kt$StorageFragment$100000</ID>
     <ID>MagicNumber:StorageFragment.kt$StorageFragment$2000</ID>
     <ID>MagicNumber:StorageFragment.kt$StorageFragment$3</ID>
@@ -58,6 +78,7 @@
     <ID>MaxLineLength:FavoritesActivity.kt$FavoritesActivity$ManageFavoritesAdapter(this@FavoritesActivity, favorites, this@FavoritesActivity, manageFavoritesList) { }</ID>
     <ID>MaxLineLength:ItemsAdapter.kt$ItemsAdapter$}</ID>
     <ID>MaxLineLength:ItemsFragment.kt$ItemsFragment$ItemsAdapter</ID>
+    <ID>MaxLineLength:ItemsFragment.kt$ItemsFragment$activity.startActivity(android.content.Intent(activity, org.fossify.filemanager.activities.NextcloudActivity::class.java))</ID>
     <ID>MaxLineLength:ItemsFragment.kt$ItemsFragment$class</ID>
     <ID>MaxLineLength:ItemsFragment.kt$ItemsFragment$context</ID>
     <ID>MaxLineLength:ItemsFragment.kt$ItemsFragment$if</ID>
@@ -85,6 +106,17 @@
     <ID>MaxLineLength:MimeTypesActivity.kt$MimeTypesActivity$val fullMimetype = cursor.getStringValue(MediaStore.Files.FileColumns.MIME_TYPE)?.lowercase(Locale.getDefault()) ?: return@queryCursor</ID>
     <ID>MaxLineLength:MyViewPagerFragment.kt$MyViewPagerFragment$abstract</ID>
     <ID>MaxLineLength:MyViewPagerFragment.kt$MyViewPagerFragment$val fabIcon = context.resources.getColoredDrawableWithColor(iconId, context.getProperPrimaryColor().getContrastColor())</ID>
+    <ID>MaxLineLength:NextcloudActivity.kt$NextcloudActivity$ConfirmationDialog</ID>
+    <ID>MaxLineLength:NextcloudActivity.kt$NextcloudActivity$contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE), null, null, null)</ID>
+    <ID>MaxLineLength:NextcloudActivity.kt$NextcloudActivity$d.hochladen(kind(name), { contentResolver.openInputStream(uri)!! }, laenge, contentResolver.getType(uri))</ID>
+    <ID>MaxLineLength:NextcloudActivity.kt$NextcloudActivity$if (!e.istOrdner &amp;&amp; e.fileId &gt; 0 &amp;&amp; d != null) punkte += getString(R.string.nc_im_browser) to { browserOeffnen(d.webAdresse(e)) }</ID>
+    <ID>MaxLineLength:NextcloudActivity.kt$NextcloudActivity$if (e.darfUmbenennen) punkte += getString(R.string.nc_umbenennen) to { nameAbfragen(R.string.nc_umbenennen, e.name) { umbenennen(e, it) } }</ID>
+    <ID>MaxLineLength:NextcloudActivity.kt$NextcloudActivity$if (name.isEmpty() || name.contains('/') || name == "." || name == "..") return@setOnClickListener</ID>
+    <ID>MaxLineLength:NextcloudActivity.kt$NextcloudActivity$if (ziel == pfad) eintraege = if (config.shouldShowHidden()) liste else liste.filterNot { it.name.startsWith(".") }</ID>
+    <ID>MaxLineLength:NextcloudActivity.kt$NextcloudActivity$startActivity(Intent(this, NextcloudActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT))</ID>
+    <ID>MaxLineLength:NextcloudActivity.kt$NextcloudActivity.Liste$itemIcon.setImageResource(if (e.istOrdner) org.fossify.commons.R.drawable.ic_folder_vector else org.fossify.commons.R.drawable.ic_file_generic)</ID>
+    <ID>MaxLineLength:NextcloudProvider.kt$NextcloudProvider$c.setNotificationUri(ctx.contentResolver, DocumentsContract.buildChildDocumentsUri(Nextcloud.authority(ctx), parentDocumentId))</ID>
+    <ID>MaxLineLength:NextcloudProvider.kt$NextcloudProvider$override</ID>
     <ID>MaxLineLength:ReadTextActivity.kt$ReadTextActivity$if</ID>
     <ID>MaxLineLength:ReadTextActivity.kt$ReadTextActivity$private</ID>
     <ID>MaxLineLength:RecentsFragment.kt$RecentsFragment$ItemsAdapter</ID>
@@ -93,6 +125,8 @@
     <ID>MaxLineLength:RecentsFragment.kt$RecentsFragment$if</ID>
     <ID>MaxLineLength:RootHelpers.kt$RootHelpers$fun</ID>
     <ID>MaxLineLength:RootHelpers.kt$RootHelpers$private</ID>
+    <ID>MaxLineLength:RosenwegOrtChip.kt$setStroke(context.resources.getDimensionPixelSize(org.fossify.commons.R.dimen.one_dp), primaer.adjustAlpha(MEDIUM_ALPHA))</ID>
+    <ID>MaxLineLength:Rueckschreiben.kt$Rueckschreiben$melden(ctx, ctx.getString(R.string.nc_rueck_gerettet, "$VOM_TELEFON/${ziel.substringAfterLast('/')}"))</ID>
     <ID>MaxLineLength:SaveAsActivity.kt$SaveAsActivity$FilePickerDialog</ID>
     <ID>MaxLineLength:SaveAsDialog.kt$SaveAsDialog$val title = String.format(activity.getString(R.string.file_already_exists_overwrite), newFilename)</ID>
     <ID>MaxLineLength:SettingsActivity.kt$SettingsActivity$settingsUseEnglishHolder.beVisibleIf((config.wasUseEnglishToggled || Locale.getDefault().language != "en") &amp;&amp; !isTiramisuPlus())</ID>
@@ -109,11 +143,20 @@
     <ID>ReturnCount:MainActivity.kt$MainActivity$override fun onBackPressedCompat(): Boolean</ID>
     <ID>SwallowedException:ItemsAdapter.kt$ItemsAdapter$e: Exception</ID>
     <ID>SwallowedException:MimeTypesActivity.kt$MimeTypesActivity$e: Exception</ID>
+    <ID>SwallowedException:NextcloudActivity.kt$NextcloudActivity$e: ActivityNotFoundException</ID>
+    <ID>SwallowedException:NextcloudProvider.kt$NextcloudProvider$e: IOException</ID>
+    <ID>SwallowedException:NextcloudProvider.kt$NextcloudProvider$e: IllegalArgumentException</ID>
+    <ID>SwallowedException:NextcloudProvider.kt$NextcloudProvider$e: NextcloudFehler</ID>
+    <ID>SwallowedException:NextcloudProvider.kt$NextcloudProvider$e: TimeoutException</ID>
+    <ID>SwallowedException:Rueckschreiben.kt$Rueckschreiben$e: IOException</ID>
     <ID>SwallowedException:StorageFragment.kt$StorageFragment$e: Exception</ID>
     <ID>TooGenericExceptionCaught:DecompressActivity.kt$DecompressActivity$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:DownloadsHochladen.kt$DownloadsHochladen.Pruefung$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ItemsAdapter.kt$ItemsAdapter$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ItemsAdapter.kt$ItemsAdapter$exception: Exception</ID>
     <ID>TooGenericExceptionCaught:MimeTypesActivity.kt$MimeTypesActivity$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:NextcloudActivity.kt$NextcloudActivity$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:NextcloudActivity.kt$NextcloudActivity$ex: Exception</ID>
     <ID>TooGenericExceptionCaught:ReadTextActivity.kt$ReadTextActivity$e: Exception</ID>
     <ID>TooGenericExceptionCaught:RecentsFragment.kt$RecentsFragment$e: Exception</ID>
     <ID>TooGenericExceptionCaught:RootHelpers.kt$RootHelpers$e: Exception</ID>
@@ -127,11 +170,16 @@
     <ID>TooManyFunctions:MainActivity.kt$MainActivity : SimpleActivity</ID>
     <ID>TooManyFunctions:ManageFavoritesAdapter.kt$ManageFavoritesAdapter : MyRecyclerViewAdapter</ID>
     <ID>TooManyFunctions:MimeTypesActivity.kt$MimeTypesActivity : SimpleActivityItemOperationsListener</ID>
+    <ID>TooManyFunctions:Nextcloud.kt$Nextcloud</ID>
+    <ID>TooManyFunctions:NextcloudActivity.kt$NextcloudActivity : SimpleActivity</ID>
+    <ID>TooManyFunctions:NextcloudProvider.kt$NextcloudProvider : DocumentsProvider</ID>
     <ID>TooManyFunctions:ReadTextActivity.kt$ReadTextActivity : SimpleActivity</ID>
     <ID>TooManyFunctions:RecentsFragment.kt$RecentsFragment : MyViewPagerFragmentItemOperationsListener</ID>
     <ID>TooManyFunctions:RootHelpers.kt$RootHelpers</ID>
+    <ID>TooManyFunctions:Rueckschreiben.kt$Rueckschreiben</ID>
     <ID>TooManyFunctions:SettingsActivity.kt$SettingsActivity : SimpleActivity</ID>
     <ID>TooManyFunctions:StorageFragment.kt$StorageFragment : MyViewPagerFragmentItemOperationsListener</ID>
+    <ID>UseRequire:NextcloudProvider.kt$NextcloudProvider$throw IllegalArgumentException("Ungueltiger Name")</ID>
     <ID>VariableNaming:ItemsAdapter.kt$ItemsAdapter$val SAFPath = getFirstSelectedItemPath()</ID>
     <ID>VariableNaming:RecentsFragment.kt$RecentsFragment$private val RECENTS_LIMIT = 50</ID>
     <ID>VariableNaming:StorageFragment.kt$StorageFragment$private val SIZE_DIVIDER = 100000</ID>
