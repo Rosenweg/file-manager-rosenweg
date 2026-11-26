@@ -176,8 +176,8 @@ class NextcloudActivity : SimpleActivity() {
         }
         if (!anmeldung.angemeldet(this)) {
             wartetAufSchirm = true
-            startActivity(Intent(this, ch.rosenweg4303.cloud.RosenwegAnmeldeSchirm::class.java)
-                .putExtra(ch.rosenweg4303.cloud.RosenwegAnmeldeSchirm.EXTRA_ZURUECK_SCHLIESST_APP, false))
+            // ohne Anmeldung ist die App nicht nutzbar: "Zurueck" auf dem Schirm schliesst sie (Standard)
+            startActivity(Intent(this, ch.rosenweg4303.cloud.RosenwegAnmeldeSchirm::class.java))
             return
         }
         ensureBackgroundThread {
