@@ -1,5 +1,5 @@
 [versions]
-rosenwegCloud = "0.13.7"
+rosenwegCloud = "0.13.8"
 #jetbrains
 kotlin = "2.3.10"
 #Detekt
